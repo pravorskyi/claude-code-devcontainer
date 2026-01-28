@@ -21,5 +21,7 @@ jobs:
       - name: Configure sparse checkout
         working-directory: claude-code
         run: |
+          find .
           git sparse-checkout init --cone
           git sparse-checkout set .devcontainer
+          find .
