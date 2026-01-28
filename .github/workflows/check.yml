@@ -13,17 +13,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          submodules: true
-          fetch-depth: 0
+        uses: actions/checkout@v6
 
-      - name: Configure sparse checkout
-        working-directory: claude-code
+      - name: Sparse checkout submodule
         run: |
+          git submodule init
+          cd claude-code
           find .
-          echo "============TEST===========";
+          echo "============TEST==========="
           git sparse-checkout init --cone
           git sparse-checkout set .devcontainer
-          echo "============TEST===========";
+          git submodule update --remote
+          echo "============TEST==========="
           find .
