@@ -15,7 +15,31 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Check for .devcontainer updates
+        id: check
+        run: |
+          NEW_COMMIT=$(curl -s "https://api.github.com/repos/anthropics/claude-code/commits?path=.devcontainer&per_page=1" \
+            | jq -r '.[0].sha')
+          OLD_COMMIT=$(git submodule status claude-code | awk '{print $1}' | tr -d '-+')
+
+          echo "Upstream: $NEW_COMMIT"
+          echo "Current:  $OLD_COMMIT"
+
+          if [ -z "$NEW_COMMIT" ] || [ "$NEW_COMMIT" = "null" ]; then
+            echo "::error::Failed to fetch upstream commit"
+            exit 1
+          fi
+
+          if [ "$NEW_COMMIT" = "$OLD_COMMIT" ]; then
+            echo "No changes"
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Changes detected"
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Sparse checkout submodule
+        if: steps.check.outputs.has_changes == 'true'
         run: |
           git submodule init
           cd claude-code
