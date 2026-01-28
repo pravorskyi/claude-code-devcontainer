@@ -22,6 +22,8 @@ jobs:
         working-directory: claude-code
         run: |
           find .
+          echo "============TEST===========";
           git sparse-checkout init --cone
           git sparse-checkout set .devcontainer
+          echo "============TEST===========";
           find .
