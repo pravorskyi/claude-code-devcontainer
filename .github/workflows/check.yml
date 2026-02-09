@@ -69,15 +69,17 @@ jobs:
       - name: Update submodule
         if: steps.devcontainer.outputs.has_changes == 'true'
         run: |
-          git submodule init
-          git submodule update --remote --no-checkout
+          git submodule update --init --remote --filter=blob:none claude-code
+          echo "=== Sparse checkout contents ==="
+          find claude-code -not -path '*/.git/*'
+          echo "=== Size ==="
+          du -sh claude-code claude-code/.git
           cd claude-code
           git sparse-checkout init --cone
           git sparse-checkout set .devcontainer
-          git checkout
-          echo "=== Sparse checkout contents ==="
+          echo "=== Sparse checkout contents (after) ==="
           find . -not -path './.git/*'
-          echo "=== Size ==="
+          echo "=== Size (after) ==="
           du -sh . .git
 
       - name: Trigger rebuild
