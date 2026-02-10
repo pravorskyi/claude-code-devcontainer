@@ -57,7 +57,7 @@ jobs:
           echo "Latest npm version: $LATEST"
 
           IMAGE="ghcr.io/${{ github.repository }}/devcontainer"
-          if docker manifest inspect "$IMAGE:claude-$LATEST" > /dev/null 2>&1; then
+          if docker manifest inspect "$IMAGE:claude-code-$LATEST" > /dev/null 2>&1; then
             echo "Image exists for claude-code $LATEST"
             echo "needs_rebuild=false" >> "$GITHUB_OUTPUT"
           else
