@@ -19,10 +19,8 @@ jobs:
 
       - name: Check for .devcontainer updates
         id: devcontainer
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          NEW_COMMIT=$(gh api repos/anthropics/claude-code/commits -q '.[0].sha' -f path=.devcontainer -f per_page=1)
+          NEW_COMMIT=$(curl -sf "https://api.github.com/repos/anthropics/claude-code/commits?path=.devcontainer&per_page=1" | jq -r '.[0].sha')
           OLD_COMMIT=$(git rev-parse HEAD:claude-code)
 
           echo "Upstream: $NEW_COMMIT"
@@ -70,5 +68,5 @@ jobs:
       - name: Trigger rebuild
         if: steps.devcontainer.outputs.has_changes == 'true' || steps.claude.outputs.needs_rebuild == 'true'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh workflow run devcontainer.yml
