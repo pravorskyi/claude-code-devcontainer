@@ -69,15 +69,10 @@ jobs:
       - name: Update submodule
         if: steps.devcontainer.outputs.has_changes == 'true'
         run: |
-          git clone --filter=blob:none --sparse --no-checkout \
-            https://github.com/anthropics/claude-code.git claude-code
-          cd claude-code
-          git sparse-checkout set .devcontainer
-          git checkout
-          echo "=== Sparse checkout contents ==="
-          find . -not -path './.git/*'
+          git submodule update --init --depth=1 --remote claude-code
           echo "=== Size ==="
-          du -sh . .git
+          du -sh claude-code claude-code/.git
+          ls claude-code/.devcontainer/
 
       - name: Trigger rebuild
         if: steps.devcontainer.outputs.has_changes == 'true' || steps.claude.outputs.needs_rebuild == 'true'
