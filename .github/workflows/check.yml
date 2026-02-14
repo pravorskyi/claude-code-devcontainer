@@ -6,13 +6,15 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   packages: read
-  actions: write
 
 jobs:
   check:
     runs-on: ubuntu-latest
+    outputs:
+      has_changes: ${{ steps.devcontainer.outputs.has_changes }}
+      needs_rebuild: ${{ steps.claude.outputs.needs_rebuild }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -65,8 +67,12 @@ jobs:
             echo "needs_rebuild=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Trigger rebuild
-        if: steps.devcontainer.outputs.has_changes == 'true' || steps.claude.outputs.needs_rebuild == 'true'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh workflow run devcontainer.yml
+  build:
+    needs: check
+    if: needs.check.outputs.has_changes == 'true' || needs.check.outputs.needs_rebuild == 'true'
+    uses: ./.github/workflows/devcontainer.yml
+
+  update-submodule:
+    needs: [check, build]
+    if: needs.check.outputs.has_changes == 'true'
+    uses: ./.github/workflows/update-submodule.yml
