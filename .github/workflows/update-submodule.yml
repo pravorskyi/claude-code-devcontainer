@@ -1,0 +1,33 @@
+name: Update Submodule Ref
+
+on:
+  workflow_run:
+    workflows: ["Build and Push Devcontainer"]
+    types: [completed]
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success'
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Update submodule ref
+        run: |
+          git submodule update --init --depth=1 --remote claude-code
+          if git diff --quiet; then
+            echo "Submodule already up to date"
+            exit 0
+          fi
+          echo "Submodule updated"
+          git diff
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add claude-code
+          git commit -m "Update claude-code submodule ref"
+          git push
