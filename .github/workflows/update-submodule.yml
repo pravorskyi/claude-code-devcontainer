@@ -2,7 +2,16 @@ name: Update Submodule Ref
 
 on:
   workflow_call:
+    inputs:
+      devcontainer_sha:
+        required: true
+        type: string
   workflow_dispatch:
+    inputs:
+      devcontainer_sha:
+        description: 'Upstream commit SHA to pin (latest .devcontainer commit if empty)'
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -16,7 +25,11 @@ jobs:
       - name: Update submodule ref
         id: submodule
         run: |
-          git submodule update --init --depth=1 --remote claude-code
+          git submodule update --init --depth=1 claude-code
+          cd claude-code
+          git fetch origin ${{ inputs.devcontainer_sha }} --depth=1
+          git checkout ${{ inputs.devcontainer_sha }}
+          cd ..
           if git diff --quiet; then
             echo "Submodule already up to date"
             echo "changed=false" >> "$GITHUB_OUTPUT"

@@ -14,6 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       has_changes: ${{ steps.devcontainer.outputs.has_changes }}
+      devcontainer_sha: ${{ steps.devcontainer.outputs.devcontainer_sha }}
       needs_rebuild: ${{ steps.claude.outputs.needs_rebuild }}
     steps:
       - name: Checkout
@@ -39,6 +40,7 @@ jobs:
           else
             echo ".devcontainer changes detected"
             echo "has_changes=true" >> "$GITHUB_OUTPUT"
+            echo "devcontainer_sha=$NEW_COMMIT" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Login to GHCR
@@ -76,3 +78,5 @@ jobs:
     needs: [check, build]
     if: needs.check.outputs.has_changes == 'true'
     uses: ./.github/workflows/update-submodule.yml
+    with:
+      devcontainer_sha: ${{ needs.check.outputs.devcontainer_sha }}
