@@ -16,6 +16,7 @@ jobs:
       has_changes: ${{ steps.devcontainer.outputs.has_changes }}
       devcontainer_sha: ${{ steps.devcontainer.outputs.devcontainer_sha }}
       needs_rebuild: ${{ steps.claude.outputs.needs_rebuild }}
+      claude_version: ${{ steps.claude.outputs.version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -59,6 +60,7 @@ jobs:
             exit 1
           fi
           echo "Latest npm version: $LATEST"
+          echo "version=$LATEST" >> "$GITHUB_OUTPUT"
 
           IMAGE="ghcr.io/${{ github.repository }}/devcontainer"
           if docker manifest inspect "$IMAGE:claude-code-$LATEST" > /dev/null 2>&1; then
@@ -73,6 +75,8 @@ jobs:
     needs: check
     if: needs.check.outputs.has_changes == 'true' || needs.check.outputs.needs_rebuild == 'true'
     uses: ./.github/workflows/devcontainer.yml
+    with:
+      claude_code_version: ${{ needs.check.outputs.claude_version }}
 
   update-submodule:
     needs: [check, build]
